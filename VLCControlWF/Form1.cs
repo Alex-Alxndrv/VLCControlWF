@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Windows.Forms;
-using VLCControlWF.Properties;
-//using System;
 using System.IO.Ports;
 namespace VLCControlWF
 {
@@ -11,13 +9,22 @@ namespace VLCControlWF
         public Form1()
         {
             InitializeComponent();
-           
+
+            string[] ports = SerialPort.GetPortNames();
+
+            // Display each port name to the console.
+            foreach (string port in ports)
+            {
+                Console.WriteLine(port);
+                listBox1.Items.Add(port);
+            }
+            listBox1.SelectedIndex = 0;
         }
 
         void SendCommand(string cmd)
         {
             HttpSender.Post(
-                $"http://{Settings.Default.Ip}:{Settings.Default.Port}/requests/status.xml{cmd}", null);
+                $"http://{Properties.Settings.Default.Ip}:{Properties.Settings.Default.Port}/requests/status.xml{cmd}");
         }
 
 
@@ -75,8 +82,9 @@ namespace VLCControlWF
             {
                 open_button.Text = "Открыть";
                 listBox1.Enabled =true;
-                timer1.Stop();
+                //timer1.Stop();
                 serialPort1.Close();
+                serialPort1.DataReceived -= SerialPort1_DataReceived;
 
             }
             else
@@ -87,23 +95,47 @@ namespace VLCControlWF
             serialPort1.PortName = listBox1.SelectedItem.ToString();
                 
             serialPort1.Open();
-            timer1.Start();
+                //timer1.Start();
+                serialPort1.DataReceived += SerialPort1_DataReceived;
             }
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        private void SerialPort1_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            string[] ports = SerialPort.GetPortNames();
+            str=serialPort1.ReadExisting();
 
-        
-            // Display each port name to the console.
-            foreach (string port in ports)
+            //if (label1.InvokeRequired)
+            //{
+            //    label1.BeginInvoke((MethodInvoker)delegate () { label1.Visible = !label1.Visible; });
+            //}
+            //else
+            //{
+            //    label1.Visible = !label1.Visible;
+            //}
+
+            switch (str)
             {
-                Console.WriteLine(port);
-                listBox1.Items.Add(port);
+                case "1":
+                    SendCommand(Commands.Play);
+                    SetLabelValue("PLAY");
+                    break;
+                case "0":
+                    SendCommand(Commands.Stop);
+                    SetLabelValue("STOP");
+                    break;
             }
-            listBox1.SelectedIndex = 0;
-           
+        }
+
+        void SetLabelValue(string text)
+        {
+            if (label1.InvokeRequired)
+            {
+                label1.BeginInvoke((MethodInvoker)delegate () { label1.Text=text; });
+            }
+            else
+            {
+                label1.Text = text;
+            }
         }
     }
 }

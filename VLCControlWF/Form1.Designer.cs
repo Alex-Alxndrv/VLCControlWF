@@ -140,7 +140,6 @@
             this.Controls.Add(this.buttonPlay);
             this.Name = "Form1";
             this.Text = "VLC Button";
-            this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

@@ -2,21 +2,20 @@
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Windows.Forms;
 
 namespace VLCControlWF
 {
     public static class HttpSender
     {
-        public static void Post(string uriString, Action<string, bool> callback)
+        public static void Post(string uriString)
         {
             try
             {
                 var uri = new Uri(uriString);
                 var req = WebRequest.Create(uri);
 
-                //var credentials = Convert.ToBase64String(ASCIIEncoding.ASCII.GetBytes("" + ":" + "graffin"));
                 var credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes("" + ":" + Properties.Settings.Default.Password));
-                //var outputData = new StringBuilder();
                 req.Credentials= CredentialCache.DefaultNetworkCredentials;
                 req.Headers.Add("Authorization", "Basic " + credentials);
 
@@ -32,14 +31,10 @@ namespace VLCControlWF
                         }
                     }
                 }
-
-                //callback(content, false);
-
             }
             catch (WebException ex)
             {
-                callback(ex.ToString(), true);
-
+                MessageBox.Show("There is no VLC http server!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }
